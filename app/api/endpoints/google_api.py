@@ -7,7 +7,6 @@ from app.core.google_client import get_service
 from app.core.user import current_superuser
 
 from app.crud.projects import charity_project_crud
-from app.schemas.projects import CharityProjectDB
 from app.services.google_api import (
     set_user_permissions,
     spreadsheets_create,
