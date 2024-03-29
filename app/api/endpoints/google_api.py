@@ -14,22 +14,16 @@ from app.services.google_api import (
     spreadsheets_update_value,
 )
 
-# Создаём экземпляр класса APIRouter
 router = APIRouter()
 
 
 @router.get(
     "/",
-    # Тип возвращаемого эндпоинтом ответа
     response_model=list[CharityProjectDB],
-    # Определяем зависимости
     dependencies=[Depends(current_superuser)],
 )
 async def get_report(
-    # Начало периода
-    # Сессия
     session: AsyncSession = Depends(get_async_session),
-    # «Обёртка»
     wrapper_services: Aiogoogle = Depends(get_service),
 ):
     charity_project = await charity_project_crud.get_projects_by_completion_rate(
