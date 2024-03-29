@@ -31,23 +31,28 @@ async def invest_after_project_creation(
     open_partners = open_partners.scalars().all()
 
     for partner in open_partners:
-        remaining_funds_item = open_items.full_amount - open_items.invested_amount
-        remaining_funds_partner = partner.full_amount - partner.invested_amount
-        if open_items.full_amount >= remaining_funds_partner:
-            open_items.invested_amount += remaining_funds_partner
-            partner.fully_invested = (
-                True  # повторяющийся блок, лучше уносить в отдельную функцию
-            )
-            partner.close_date = datetime.now()
-            partner.invested_amount = partner.full_amount
-        else:
-            partner.invested_amount += remaining_funds_item
-            open_items.fully_invested = True
-            open_items.close_date = datetime.now()
-            open_items.invested_amount = open_items.full_amount
+        await invest_in_partner(open_items, partner)
         if open_items.full_amount == open_items.invested_amount:
-            open_items.fully_invested = True
-            open_items.close_date = datetime.now()
+            break
 
     await session.commit()
     await session.refresh(open_items)
+
+
+# Если я правильно понял замечание
+async def invest_in_partner(open_items, partner):
+    remaining_funds_item = open_items.full_amount - open_items.invested_amount
+    remaining_funds_partner = partner.full_amount - partner.invested_amount
+    if open_items.full_amount >= remaining_funds_partner:
+        open_items.invested_amount += remaining_funds_partner
+        partner.fully_invested = True
+        partner.close_date = datetime.now()
+        partner.invested_amount = partner.full_amount
+    else:
+        partner.invested_amount += remaining_funds_item
+        open_items.fully_invested = True
+        open_items.close_date = datetime.now()
+        open_items.invested_amount = open_items.full_amount
+    if open_items.full_amount == open_items.invested_amount:
+        open_items.fully_invested = True
+        open_items.close_date = datetime.now()
