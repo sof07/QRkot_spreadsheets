@@ -56,7 +56,7 @@ async def spreadsheets_update_value(
         ["Название проекта", "Время сбора", "Описание"],
     ]
     for project in charity_project:
-        time = (project.close_date - project.create_date).days
+        time = project.close_date - project.create_date
         new_row = [
             str(project.name),
             str(time),
@@ -73,3 +73,4 @@ async def spreadsheets_update_value(
             json=update_body,
         )
     )
+    return response
