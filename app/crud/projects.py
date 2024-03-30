@@ -32,8 +32,6 @@ class CRUDCharityProject(CRUDBase):
         )
         result = await session.execute(query)
         projects = result.scalars().all()
-        for project in projects:
-            print(f">>>>>>>{project.description}")
         return projects
 
 

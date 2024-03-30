@@ -39,20 +39,21 @@ async def invest_after_project_creation(
     await session.refresh(open_items)
 
 
-# Если я правильно понял замечание
+def set_the_closing_date_and_status(type):
+    type.fully_invested = True
+    type.close_date = datetime.now()
+
+
 async def invest_in_partner(open_items, partner):
     remaining_funds_item = open_items.full_amount - open_items.invested_amount
     remaining_funds_partner = partner.full_amount - partner.invested_amount
     if open_items.full_amount >= remaining_funds_partner:
         open_items.invested_amount += remaining_funds_partner
-        partner.fully_invested = True
-        partner.close_date = datetime.now()
         partner.invested_amount = partner.full_amount
+        set_the_closing_date_and_status(partner)
     else:
         partner.invested_amount += remaining_funds_item
-        open_items.fully_invested = True
-        open_items.close_date = datetime.now()
         open_items.invested_amount = open_items.full_amount
+        set_the_closing_date_and_status(open_items)
     if open_items.full_amount == open_items.invested_amount:
-        open_items.fully_invested = True
-        open_items.close_date = datetime.now()
+        set_the_closing_date_and_status(open_items)
