@@ -7,8 +7,8 @@ from app.core.config import settings
 
 
 FORMAT = "%Y/%m/%d %H:%M:%S"
-MAXIMUM_NUMBER_OF_ROWS = 10000000
-MAXIMUM_NUMBER_OF_COLUMNS = 18278
+MAXIMUM_NUMBER_OF_ROWS = 100
+MAXIMUM_NUMBER_OF_COLUMNS = 11
 
 
 def table_range(row_range, column_range):
@@ -20,7 +20,8 @@ def table_range(row_range, column_range):
     )
 
 
-def create_table_values(now_date_time):
+def create_table_values():
+    now_date_time = datetime.now().strftime(FORMAT)
     return [
         ["Отчёт от", now_date_time],
         ["Топ проектов по скорости закрытия"],
@@ -28,7 +29,8 @@ def create_table_values(now_date_time):
     ]
 
 
-def create_spreadsheet_properties(now_date_time):
+def create_spreadsheet_properties():
+    now_date_time = datetime.now().strftime(FORMAT)
     return {
         "properties": {"title": f"Отчёт от {now_date_time}", "locale": "ru_RU"},
         "sheets": [
@@ -45,9 +47,8 @@ def create_spreadsheet_properties(now_date_time):
 
 
 async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
-    now_date_time = datetime.now().strftime(FORMAT)
     service = await wrapper_services.discover("sheets", "v4")
-    spreadsheet_body = create_spreadsheet_properties(now_date_time)
+    spreadsheet_body = create_spreadsheet_properties()
     response = await wrapper_services.as_service_account(
         service.spreadsheets.create(json=spreadsheet_body)
     )
@@ -70,11 +71,10 @@ async def set_user_permissions(spreadsheetid: str, wrapper_services: Aiogoogle) 
 
 
 async def spreadsheets_update_value(
-    spreadsheetid: str, charity_project: list, wrapper_services: Aiogoogle
+    spreadsheet_id: str, charity_project: list, wrapper_services: Aiogoogle
 ) -> None:
-    now_date_time = datetime.now().strftime(FORMAT)
     service = await wrapper_services.discover("sheets", "v4")
-    table_values = create_table_values(now_date_time)
+    table_values = create_table_values()
     for project in charity_project:
         time = project.close_date - project.create_date
         new_row = [
@@ -88,7 +88,7 @@ async def spreadsheets_update_value(
     update_body = {"majorDimension": "ROWS", "values": table_values}
     response = await wrapper_services.as_service_account(
         service.spreadsheets.values.update(
-            spreadsheetId=spreadsheetid,
+            spreadsheetId=spreadsheet_id,
             range=table_range(row_range, column_range),
             valueInputOption="USER_ENTERED",
             json=update_body,
